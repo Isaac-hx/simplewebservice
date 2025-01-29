@@ -38,6 +38,7 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-type", "application/json")
 	if r.Method == "GET" {
+		//konvert nilai string ke integer
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
 			http.Error(w, "", http.StatusBadRequest)
@@ -53,7 +54,7 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				//response balik ke client dari json
+				//response balik ke client melalui format datahttps://github.com/Isaac-hx/simplewebservice json
 				w.Write(response)
 				return
 
