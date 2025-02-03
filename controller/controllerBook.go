@@ -84,3 +84,75 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(res)
 
 }
+
+// update book controller
+func UpdateBook(w http.ResponseWriter, r *http.Request) {
+	//Log Server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+
+	w.Header().Set("Content-type", "application/json")
+	if r.Method != "PUT" {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	if id := r.URL.Query().Get("id"); id != "" {
+		param, err := strconv.Atoi(id)
+		if err != nil {
+			http.Error(w, "", http.StatusBadRequest)
+			return
+		}
+		for i, data := range models.ListOfBooks {
+			if data.ID == param {
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					http.Error(w, "Error from server !!", http.StatusInternalServerError)
+					return
+				}
+				var book models.Book
+				if err := json.Unmarshal(body, &book); err != nil {
+					http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+					return
+				}
+				book.ID = param
+
+				models.ListOfBooks[i] = book
+				w.WriteHeader(http.StatusOK)
+				res := map[string]string{"message": "Book updated sucessfully!!"}
+				json.NewEncoder(w).Encode(res)
+				return
+			}
+
+		}
+	}
+	http.Error(w, "Book not found!", http.StatusNotFound)
+}
+
+func DeleteBook(w http.ResponseWriter, r *http.Request) {
+	//Log server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+
+	w.Header().Set("Content-type", "application/json")
+	if r.Method != "DELETE" {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if id := r.URL.Query().Get("id"); id != "" {
+		param, err := strconv.Atoi(id)
+		if err != nil {
+			http.Error(w, "", http.StatusBadRequest)
+			return
+		}
+		for i, data := range models.ListOfBooks {
+			if data.ID == param {
+				models.ListOfBooks = append(models.ListOfBooks[:i], models.ListOfBooks[i+1:]...)
+				w.WriteHeader(http.StatusOK)
+				res := map[string]string{"message": "Book deleted sucessfully!!"}
+				json.NewEncoder(w).Encode(res)
+				return
+			}
+		}
+	}
+	http.Error(w, "Book not found!", http.StatusNotFound)
+
+}

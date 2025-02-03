@@ -15,6 +15,10 @@ func main() {
 			controller.Getbook(w, r)
 		case "POST":
 			controller.CreateBook(w, r)
+		case "DELETE":
+			controller.DeleteBook(w, r)
+		case "PUT":
+			controller.UpdateBook(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
