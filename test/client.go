@@ -2,8 +2,13 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"simplewebservice/config"
 	"simplewebservice/models"
+
+	_ "github.com/lib/pq"
 )
 
 var baseUrl = "http://localhost:8085"
@@ -36,10 +41,32 @@ func fetchBooks() ([]models.Book, error) {
 
 	//data pada variabel `res` yang terdapat pada property body
 	//Mendecode data menjadi data bertipe pointer `&data`
+	//Perbedaan antara json.marshal dan newdecoder
+	//json.Marshal digunakan untuk mengubah nilai Go menjadi representasi []byte,cocok untuk menghasilkan json dan menyimpannya untuk kemudian di olah lebih lanjut..
+	//json.Newencoder digunakan untuk membuat object encoder yang menulis JSON ke io.writer,fungsi ini tidak menghasilkan nilai []byte,tetapi langsung menulis ke tujuan yang ditentukan.Cocok digunakan untuk menulis data json langsung ke io.Writer
 	err = json.NewDecoder(res.Body).Decode(&data)
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
 
+}
+func TestConnectionDB() {
+	//Koneksi database
+	db, err := config.Connect()
+	if err != nil {
+		log.Println("Test database connection error!!", err.Error())
+		return
+	}
+
+	//menutup koneksi database
+	defer db.Close()
+
+	//Melakukan query ke database
+	err = db.Ping()
+	if err != nil {
+		log.Println("Test database connection error!!", err.Error())
+		return
+	}
+	fmt.Println("Test database connection success... Status : ", db.Stats().OpenConnections)
 }

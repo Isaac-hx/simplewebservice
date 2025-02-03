@@ -5,13 +5,23 @@ import (
 	"net/http"
 	"simplewebservice/controller"
 	"simplewebservice/logger"
+	"simplewebservice/test"
 )
 
 func main() {
+	test.TestConnectionDB()
+
 	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
 		case "GET":
+			if id := r.URL.Query().Get("id"); id != "" {
+				//konvert nilai string ke integer
+
+				controller.GetBookById(w, r)
+				return
+
+			}
 			controller.Getbook(w, r)
 		case "POST":
 			controller.CreateBook(w, r)
@@ -28,7 +38,6 @@ func main() {
 	http.HandleFunc("/card", controller.CreateCardIdentity)
 	http.HandleFunc("/shape", controller.GetCalculateShape)
 	http.HandleFunc("/shape/rotate", controller.GetRotateShape)
-
 	logger.ListRoute("/book", "/shape", "/shape/rotate", "/card")
 	fmt.Println("Service berjalan di localhost:8085/")
 

@@ -4,163 +4,224 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"simplewebservice/config"
 	"simplewebservice/logger"
 	"simplewebservice/models"
-	"strconv"
 )
 
 func Getbook(w http.ResponseWriter, r *http.Request) {
-	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
 	//Menentukan tipe response apa yang akan dikembalikan client
 	w.Header().Set("Content-type", "application/json")
+	//connect database
+	db, err := config.Connect()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	//Menutup koneksi database
+	defer db.Close()
 
-	//jika dia memiliki query parameter
-	if id := r.URL.Query().Get("id"); id != "" {
-		//konvert nilai string ke integer
-		param, err := strconv.Atoi(id)
+	queryString := "SELECT * FROM books"
+	rows, err := db.Query(queryString)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	//Menutup koneksi rows
+	defer rows.Close()
+
+	var listOfBooks []models.Book
+
+	//Mengiterasi data yang didapatkan dari variabel rows pada object sql.Rows
+	for rows.Next() {
+		//Variabel penampung data pada setiap iterasi
+		var eachBook models.Book
+		//Menscan data yang diterima dan hasilnya nanti akan ditampung pada variabel eachbook
+		err = rows.Scan(&eachBook.ID, &eachBook.Title, &eachBook.Author, &eachBook.TotalPage, &eachBook.Publisher)
 		if err != nil {
-			http.Error(w, "", http.StatusBadRequest)
+			log.Println(err.Error())
 			return
 		}
-		GetBookById(w, r, param)
-		return
+		//Menambahkan data pada variabel eachBook ke slice listOfBook
+		listOfBooks = append(listOfBooks, eachBook)
 
 	}
 
-	res, err := json.Marshal(models.ListOfBooks)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	//Log server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
 
-	}
-
-	w.Write(res)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(listOfBooks)
 
 }
 
-func GetBookById(w http.ResponseWriter, r *http.Request, id int) {
-	for _, data := range models.ListOfBooks {
-		//jika id ditemukan
-		if data.ID == id {
-			//proses encode data menjadi json
-			response, err := json.Marshal(data)
-			//jika terjadi error pada encode data
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			//response balik ke client melalui format data
-			w.Write(response)
-			return
-
-		}
+func GetBookById(w http.ResponseWriter, r *http.Request) {
+	db, err := config.Connect()
+	if err != nil {
+		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
 	}
-	http.Error(w, "Book not found!", http.StatusNotFound)
+	defer db.Close()
 
+	// Ambil ID dari query parameter
+	id := r.URL.Query().Get("id")
+
+	var book models.Book
+
+	// Menyiapkan SQL statement berdasarkan ID
+	//$1 merupakan placeholdar yang akan membinding parameter ke-1
+	query := "SELECT id, title, author, total_page, publisher FROM books WHERE id = $1"
+	err = db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.Author, &book.TotalPage, &book.Publisher)
+	if err != nil {
+		http.Error(w, "Book not found", http.StatusNotFound)
+		log.Println("Query Error: ", err.Error())
+		return
+	}
+
+	// Log server
+	logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+
+	// Menentukan tipe response dan mengirimkan data
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(book)
 }
 
 func CreateBook(w http.ResponseWriter, r *http.Request) {
-	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
-
 	w.Header().Set("Content-type", "application/json")
+
+	//Connect database
+	db, err := config.Connect()
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+	defer db.Close()
+
+	//Membaca data dari body request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error from server !!", http.StatusInternalServerError)
+		log.Println(err.Error())
 		return
 	}
 
-	var data models.Book
-	if err := json.Unmarshal(body, &data); err != nil {
+	var parseData models.Book
+
+	if err := json.Unmarshal(body, &parseData); err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		log.Println(err.Error())
+
 		return
 	}
+	if parseData.TotalPage <= 0 {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 
-	models.ListOfBooks = append(models.ListOfBooks, data)
-	w.WriteHeader(http.StatusCreated)
-	res := map[string]string{"message": "Book created sucessfully!!"}
-	json.NewEncoder(w).Encode(res)
+		return
+	}
+	_, err = db.Exec("INSERT INTO books (title, author, total_page, publisher) VALUES ($1, $2, $3, $4)", parseData.Title, parseData.Author, int(parseData.TotalPage), parseData.Publisher)
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+	//Log server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	w.WriteHeader(http.StatusOK)
+	responseBody := map[string]string{"Message": "Success create book!!"}
+	json.NewEncoder(w).Encode(responseBody)
 
 }
 
 // update book controller
 func UpdateBook(w http.ResponseWriter, r *http.Request) {
-	//Log Server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
-
 	w.Header().Set("Content-type", "application/json")
-	if r.Method != "PUT" {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+
+	db, err := config.Connect()
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		log.Println(err.Error())
 		return
 	}
-	if id := r.URL.Query().Get("id"); id != "" {
-		param, err := strconv.Atoi(id)
-		if err != nil {
-			http.Error(w, "", http.StatusBadRequest)
-			return
-		}
-		//Mencari data buku berdasarkan id
-		for i, data := range models.ListOfBooks {
-			//jika id ditemukan
-			if data.ID == param {
-				body, err := io.ReadAll(r.Body)
-				if err != nil {
-					http.Error(w, "Error from server !!", http.StatusInternalServerError)
-					return
-				}
 
-				//Memuat data buku yang akan diupdate
-				var book models.Book
-				if err := json.Unmarshal(body, &book); err != nil {
-					http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-					return
-				}
-				//Mengupdate id data buku
-				book.ID = param
-
-				//Mengupdate data buku ke list buku
-				models.ListOfBooks[i] = book
-				w.WriteHeader(http.StatusOK)
-				res := map[string]string{"message": "Book updated sucessfully!!"}
-				json.NewEncoder(w).Encode(res)
-				return
-			}
-
-		}
+	id := r.URL.Query().Get("id")
+	var book models.Book
+	err = json.NewDecoder(r.Body).Decode(&book)
+	if err != nil {
+		http.Error(w, "Invalid format JSON!!!", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "Book not found!", http.StatusNotFound)
+	queryString := `
+	UPDATE books
+	SET title = $1, 
+		author = $2, 
+		total_page = $3, 
+		publisher = $4
+	WHERE id = $5`
+
+	row, err := db.Exec(queryString, book.Title, book.Author, book.TotalPage, book.Publisher, id)
+	if err != nil {
+		http.Error(w, "Error deleting book!!!", http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
+	}
+	rowAffected, err := row.RowsAffected()
+	if err != nil {
+		http.Error(w, "Error retrieving affected rows", http.StatusInternalServerError)
+		log.Println("RowsAffected error:", err.Error())
+		return
+
+	}
+	if rowAffected != 1 {
+		http.Error(w, "Book not found or not deleted", http.StatusNotFound)
+		log.Printf("Delete operation affected %d rows\n", rowAffected)
+		return
+	}
+	//Mencari data buku berdasarkan id
+	//Log Server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	w.WriteHeader(http.StatusOK)
+	message := map[string]string{"Message": "Book update successfully!"}
+	json.NewEncoder(w).Encode(message)
 }
 
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
-	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
-
 	w.Header().Set("Content-type", "application/json")
-	if r.Method != "DELETE" {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	db, err := config.Connect()
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		log.Println(err.Error())
 		return
 	}
+	defer db.Close()
 	//Mengambil nilai id dari query parameter
-	if id := r.URL.Query().Get("id"); id != "" {
-		param, err := strconv.Atoi(id)
-		if err != nil {
-			http.Error(w, "", http.StatusBadRequest)
-			return
-		}
-		//Mencari data buku berdasarkan id
-		for i, data := range models.ListOfBooks {
-			if data.ID == param {
-				//Menghapus buku dari data list menggunakan metode slicing array
-				models.ListOfBooks = append(models.ListOfBooks[:i], models.ListOfBooks[i+1:]...)
-				w.WriteHeader(http.StatusOK)
-				res := map[string]string{"message": "Book deleted sucessfully!!"}
-				json.NewEncoder(w).Encode(res)
-				return
-			}
-		}
+	id := r.URL.Query().Get("id")
+	//Mencari data buku berdasarkan id
+	row, err := db.Exec("DELETE FROM books WHERE id=$1", id)
+	if err != nil {
+		http.Error(w, "Error deleting book!!!", http.StatusInternalServerError)
+		log.Println(err.Error())
+		return
 	}
-	http.Error(w, "Book not found!", http.StatusNotFound)
+	rowAffected, err := row.RowsAffected()
+	if err != nil {
+		http.Error(w, "Error retrieving affected rows", http.StatusInternalServerError)
+		log.Println("RowsAffected error:", err.Error())
+		return
 
+	}
+	if rowAffected != 1 {
+		http.Error(w, "Book not found or not deleted", http.StatusNotFound)
+		log.Printf("Delete operation affected %d rows\n", rowAffected)
+		return
+	}
+	//Log server
+	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	w.WriteHeader(http.StatusOK)
+	message := map[string]string{"Message": "Delete book sucessfully!"}
+	json.NewEncoder(w).Encode(message)
 }
