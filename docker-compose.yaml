@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: isaachx
+      POSTGRES_PASSWORD: saydimas78
+      POSTGRES_DB: database-golang
+    ports:
+      - 5432:5432 # Memetakan port 5432 container ke port 5432 host
+

@@ -101,20 +101,26 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "", http.StatusBadRequest)
 			return
 		}
+		//Mencari data buku berdasarkan id
 		for i, data := range models.ListOfBooks {
+			//jika id ditemukan
 			if data.ID == param {
 				body, err := io.ReadAll(r.Body)
 				if err != nil {
 					http.Error(w, "Error from server !!", http.StatusInternalServerError)
 					return
 				}
+
+				//Memuat data buku yang akan diupdate
 				var book models.Book
 				if err := json.Unmarshal(body, &book); err != nil {
 					http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 					return
 				}
+				//Mengupdate id data buku
 				book.ID = param
 
+				//Mengupdate data buku ke list buku
 				models.ListOfBooks[i] = book
 				w.WriteHeader(http.StatusOK)
 				res := map[string]string{"message": "Book updated sucessfully!!"}
@@ -136,15 +142,17 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-
+	//Mengambil nilai id dari query parameter
 	if id := r.URL.Query().Get("id"); id != "" {
 		param, err := strconv.Atoi(id)
 		if err != nil {
 			http.Error(w, "", http.StatusBadRequest)
 			return
 		}
+		//Mencari data buku berdasarkan id
 		for i, data := range models.ListOfBooks {
 			if data.ID == param {
+				//Menghapus buku dari data list menggunakan metode slicing array
 				models.ListOfBooks = append(models.ListOfBooks[:i], models.ListOfBooks[i+1:]...)
 				w.WriteHeader(http.StatusOK)
 				res := map[string]string{"message": "Book deleted sucessfully!!"}
