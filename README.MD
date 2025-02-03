@@ -1,4 +1,7 @@
-Hal yang diperhatikan dalam membangun webservice pada golang :
-1.Membuat model yang diperlukan atau object yang nanti digunakan
-2.Menjalakan webserver yang akan dipakai
-3.Membuat handler dan membuat fungsi controllernya
+#Simplewebservice
+Simplewebservice adalah tempat layanan service sederhana yang diperuntukan untuk developer sendiri belajar backend developer.
+---
+##Note yang harus diperhatikan dalam belajar webservice menggunakan golang :
+- Membuat model yang diperlukan atau object yang nanti digunakan
+- Menjalankan webserver yang akan digunakan 
+- Membuat handler dan membuat fungsi controllernya.
