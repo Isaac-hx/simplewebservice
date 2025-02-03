@@ -1,5 +1,4 @@
 # Simplewebservice
-
 Simplewebservice adalah tempat layanan service sederhana yang diperuntukan untuk developer sendiri belajar backend developer.
 ---
 ##Note yang harus diperhatikan dalam belajar webservice menggunakan golang :
