@@ -1,7 +1,41 @@
-# Simplewebservice
-Simplewebservice adalah tempat layanan service sederhana yang diperuntukan untuk developer sendiri belajar backend developer.
+# Project Name
+
+Simplewenservice adalah sebuah repository yang digunakan oleh dev_isaachx untuk belajar mengenai dunia backend developer menggunakan golang.
 ---
-##Note yang harus diperhatikan dalam belajar webservice menggunakan golang :
-- Membuat model yang diperlukan atau object yang nanti digunakan
-- Menjalankan webserver yang akan digunakan 
-- Membuat handler dan membuat fungsi controllernya.
+
+## 🚀 Fitur
+
+- [x] Autentikasi pengguna (Login/Sign-up)
+- [x] Manajemen tugas (CRUD)
+- [x] Notifikasi real-time
+- [ ] Dukungan multi-bahasa *(akan datang)*
+
+---
+
+## 🛠️ Teknologi
+
+Proyek ini dibangun dengan teknologi berikut:
+
+- **Frontend**: React, Tailwind CSS
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL
+- **Deployment**: Docker, AWS
+
+---
+
+## 📦 Instalasi
+
+Ikuti langkah-langkah berikut untuk menjalankan proyek di lokal Anda:
+
+```bash
+# Clone repository ini
+git clone https://github.com/username/project-name.git
+
+# Masuk ke direktori proyek
+cd project-name
+
+# Install dependencies
+npm install
+
+# Jalankan server
+npm start
