@@ -1,6 +1,6 @@
-# Project Name
+# Simplewebservice
 
-Simplewenservice adalah sebuah repository yang digunakan oleh 
+Simplewebservice adalah sebuah repository yang digunakan oleh 
 dev_isaachx untuk belajar mengenai dunia backend developer menggunakan golang
 
 ---
