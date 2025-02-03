@@ -1,8 +1,7 @@
 # Project Name
 
-Simplewenservice adalah sebuah repository yang digunakan oleh dev_isaachx untuk belajar mengenai dunia backend developer menggunakan golang.
----
-
+Simplewenservice adalah sebuah repository yang digunakan oleh 
+dev_isaachx untuk belajar mengenai dunia backend developer menggunakan golang
 ## 🚀 Fitur
 
 - [x] Autentikasi pengguna (Login/Sign-up)
