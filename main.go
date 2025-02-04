@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"simplewebservice/controller"
 	"simplewebservice/logger"
-	"simplewebservice/test"
 )
 
 func main() {
-	test.TestConnectionDB()
 
 	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
 

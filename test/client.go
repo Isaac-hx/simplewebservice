@@ -2,10 +2,7 @@ package test
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"simplewebservice/config"
 	"simplewebservice/models"
 
 	_ "github.com/lib/pq"
@@ -50,23 +47,4 @@ func fetchBooks() ([]models.Book, error) {
 	}
 	return data, nil
 
-}
-func TestConnectionDB() {
-	//Koneksi database
-	db, err := config.Connect()
-	if err != nil {
-		log.Println("Test database connection error!!", err.Error())
-		return
-	}
-
-	//menutup koneksi database
-	defer db.Close()
-
-	//Melakukan query ke database
-	err = db.Ping()
-	if err != nil {
-		log.Println("Test database connection error!!", err.Error())
-		return
-	}
-	fmt.Println("Test database connection success... Status : ", db.Stats().OpenConnections)
 }
