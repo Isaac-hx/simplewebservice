@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
