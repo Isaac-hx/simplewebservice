@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"simplewebservice/controller"
-	"simplewebservice/logger"
+	"simplewebservice/utils"
 )
 
 func main() {
@@ -13,12 +13,10 @@ func main() {
 
 		switch r.Method {
 		case "GET":
+			//jika method GET terdeteksi memiliki query id
 			if id := r.URL.Query().Get("id"); id != "" {
-				//konvert nilai string ke integer
-
 				controller.GetBookById(w, r)
 				return
-
 			}
 			controller.Getbook(w, r)
 		case "POST":
@@ -36,7 +34,7 @@ func main() {
 	http.HandleFunc("/card", controller.CreateCardIdentity)
 	http.HandleFunc("/shape", controller.GetCalculateShape)
 	http.HandleFunc("/shape/rotate", controller.GetRotateShape)
-	logger.ListRoute("/book", "/shape", "/shape/rotate", "/card")
+	utils.ListRoute("/book", "/shape", "/shape/rotate", "/card")
 	fmt.Println("Service berjalan di localhost:8085/")
 
 	http.ListenAndServe(":8085", nil)

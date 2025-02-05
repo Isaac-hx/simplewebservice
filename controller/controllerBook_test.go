@@ -87,7 +87,7 @@ func TestGetAllBooks(t *testing.T) {
 
 func TestUpdateBookById(t *testing.T) {
 
-	req, err := http.NewRequest("PUT", url+"?id=1", bytes.NewReader(bodyReqPut))
+	req, err := http.NewRequest("PUT", url+"?id=12", bytes.NewReader(bodyReqPut))
 	if err != nil {
 		t.Fatal(err.Error())
 	}

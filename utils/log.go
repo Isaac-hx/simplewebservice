@@ -1,19 +1,33 @@
-package logger
+package utils
 
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
-const path string = "/home/isaaachx/Documents/log.txt"
+const Path string = "/tmp/simplewebservice.log"
 
-func LogServer(textLog string) {
+func LogServer(r *http.Request) {
+	//Informasi client ip address
+	clientIp := r.RemoteAddr
+	//Informasi komputer client
+	userAgent := r.Header.Get("User-Agent")
+	//Informasi referer
+	referer := r.Header.Get("Referer")
+	//Informasi method yang digunakan
+	method := r.Method
+	//Infromasi path yang digunakan
+	url := r.URL
 	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	timeLog := fmt.Sprintf("[%s] %s", timestamp, textLog)
-	WriteFileWithOS(path, timeLog)
-	log.Println(textLog)
+	logPattern := fmt.Sprintf("[%s] %s %s %s %s %s ", timestamp, method, url, clientIp, userAgent, referer)
+	//Ambil argumen dari package library
+	WriteFileWithOS(Path, logPattern)
+	log.Println(logPattern)
 }
 
 func WriteFileWithOS(path, text string) {
@@ -39,5 +53,12 @@ func ListRoute(dataRoute ...string) {
 	fmt.Println("List route registered : ")
 	for _, data := range dataRoute {
 		fmt.Println(data)
+	}
+}
+
+func LoadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error while reading .env file", err.Error())
 	}
 }

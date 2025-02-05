@@ -2,17 +2,16 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"simplewebservice/logger"
 	"simplewebservice/models"
+	"simplewebservice/utils"
 )
 
 func GetCalculateShape(w http.ResponseWriter, r *http.Request) {
 	// Log Server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.Header().Set("Content-type", "application/json")
 	body, err := io.ReadAll(r.Body)
 	log.Println(body)
@@ -39,7 +38,7 @@ func GetCalculateShape(w http.ResponseWriter, r *http.Request) {
 
 func GetRotateShape(w http.ResponseWriter, r *http.Request) {
 	// Log Server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.Header().Set("Content-type", "application/json")
 	body, err := io.ReadAll(r.Body)
 	log.Println(body)

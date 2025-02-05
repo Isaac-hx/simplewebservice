@@ -2,27 +2,25 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"simplewebservice/config"
 	"simplewebservice/library"
-	"simplewebservice/logger"
 	"simplewebservice/models"
+	"simplewebservice/utils"
 )
+
+var postgresConnection = library.Postgres
 
 func Getbook(w http.ResponseWriter, r *http.Request) {
 	//Menentukan tipe response apa yang akan dikembalikan client
 	w.Header().Set("Content-type", "application/json")
-	//connect database
 	//Connect database
-	postgres := library.Postgres
-	db, err := config.Connect(postgres)
+	db, err := config.Connect(postgresConnection)
 	if err != nil {
-		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
-
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	//Menutup koneksi database
@@ -31,8 +29,8 @@ func Getbook(w http.ResponseWriter, r *http.Request) {
 	queryString := "SELECT * FROM books"
 	rows, err := db.Query(queryString)
 	if err != nil {
-		http.Error(w, "Error database!!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	//Menutup koneksi rows
@@ -47,8 +45,8 @@ func Getbook(w http.ResponseWriter, r *http.Request) {
 		//Menscan data yang diterima dan hasilnya nanti akan ditampung pada variabel eachbook
 		err = rows.Scan(&eachBook.ID, &eachBook.Title, &eachBook.Author, &eachBook.TotalPage, &eachBook.Publisher)
 		if err != nil {
-			http.Error(w, "Error while iterating rows", http.StatusInternalServerError)
-			log.Println(err.Error())
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 			return
 		}
 		//Menambahkan data pada variabel eachBook ke slice listOfBook
@@ -57,7 +55,7 @@ func Getbook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(listOfBooks)
@@ -66,11 +64,10 @@ func Getbook(w http.ResponseWriter, r *http.Request) {
 
 func GetBookById(w http.ResponseWriter, r *http.Request) {
 	//Connect database
-	postgres := library.Postgres
-	db, err := config.Connect(postgres)
+	db, err := config.Connect(postgresConnection)
 	if err != nil {
-		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer db.Close()
@@ -85,13 +82,13 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 	query := "SELECT id, title, author, total_page, publisher FROM books WHERE id = $1"
 	err = db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.Author, &book.TotalPage, &book.Publisher)
 	if err != nil {
-		http.Error(w, "Book not found", http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		log.Println("Query Error: ", err.Error())
 		return
 	}
 
 	// Log server
-	logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	utils.LogServer(r)
 
 	// Menentukan tipe response dan mengirimkan data
 	w.Header().Set("Content-Type", "application/json")
@@ -103,11 +100,10 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 
 	//Connect database
-	postgres := library.Postgres
-	db, err := config.Connect(postgres)
+	db, err := config.Connect(postgresConnection)
 	if err != nil {
-		http.Error(w, "Can't connect database!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer db.Close()
@@ -115,32 +111,31 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 	//Membaca data dari body request
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, "Error reading data form!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	var parseData models.Book
 
 	if err := json.Unmarshal(body, &parseData); err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-		log.Println(err.Error())
-
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println(http.StatusText(http.StatusBadRequest), http.StatusBadRequest, err.Error())
 		return
 	}
 	if parseData.TotalPage <= 0 {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println(http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "Total data can't <= 0")
 		return
 	}
 	_, err = db.Exec("INSERT INTO books (title, author, total_page, publisher) VALUES ($1, $2, $3, $4)", parseData.Title, parseData.Author, int(parseData.TotalPage), parseData.Publisher)
 	if err != nil {
-		http.Error(w, "Error insert data!!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.WriteHeader(http.StatusOK)
 	responseBody := map[string]string{"Message": "Success create book!!"}
 	json.NewEncoder(w).Encode(responseBody)
@@ -152,11 +147,10 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 
 	//Connect database
-	postgres := library.Postgres
-	db, err := config.Connect(postgres)
+	db, err := config.Connect(postgresConnection)
 	if err != nil {
-		http.Error(w, "Can't connect databas!!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -164,7 +158,8 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	var book models.Book
 	err = json.NewDecoder(r.Body).Decode(&book)
 	if err != nil {
-		http.Error(w, "Invalid format JSON!!!", http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println(http.StatusText(http.StatusBadRequest), http.StatusBadRequest, err.Error())
 		return
 	}
 	queryString := `
@@ -177,8 +172,8 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 
 	row, err := db.Exec(queryString, book.Title, book.Author, book.TotalPage, book.Publisher, id)
 	if err != nil {
-		http.Error(w, "Error updating book!!!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	rowAffected, err := row.RowsAffected()
@@ -195,7 +190,7 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	}
 	//Mencari data buku berdasarkan id
 	//Log Server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.WriteHeader(http.StatusOK)
 	message := map[string]string{"Message": "Book update successfully!"}
 	json.NewEncoder(w).Encode(message)
@@ -204,11 +199,10 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json")
 	//Connect database
-	postgres := library.Postgres
-	db, err := config.Connect(postgres)
+	db, err := config.Connect(postgresConnection)
 	if err != nil {
-		http.Error(w, "Can't connect database!", http.StatusInternalServerError)
-		log.Println(err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
 		return
 	}
 	defer db.Close()
@@ -234,7 +228,7 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//Log server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.WriteHeader(http.StatusOK)
 	message := map[string]string{"Message": "Delete book sucessfully!"}
 	json.NewEncoder(w).Encode(message)

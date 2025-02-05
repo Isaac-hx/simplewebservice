@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"simplewebservice/logger"
 	"simplewebservice/models"
+	"simplewebservice/utils"
 )
 
 func CreateCardIdentity(w http.ResponseWriter, r *http.Request) {
 	//Log Server
-	defer logger.LogServer(fmt.Sprintf("%s - %s - %s", r.Host, r.Method, r.URL))
+	defer utils.LogServer(r)
 	w.Header().Set("Content-type", "application/json")
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

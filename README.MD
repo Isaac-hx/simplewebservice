@@ -3,17 +3,55 @@
 Simplewebservice adalah sebuah repository yang digunakan oleh
 dev_isaachx untuk belajar mengenai dunia backend developer menggunakan golang
 
----
+> Belajar adalah hal terpenting dalam hidup karena dengan belajar kita mendapatkan informasi yang berguna untuk menunjang karir kita dalam hidup baik diimplementasi di kehidupan bahkan implementasi bagi alam semesta -dimas
 
-## 🛠️ Hal yang diperhatikan dalam menambahkan model webservice
+## 🤔 Kenapa repository ini dibuat?
 
-- Membuat model yang diperlukan atau object yang nanti digunakan.
-- Menjalankan webserver yang ingin digunakan.
-- Membuat handler serta membuat controllernya.
+- Bahan dokumentasi backend developer menggunakan bahasa pemrograman golang
+- Informasi pengetahuan mengenai dunia RESTAPI di bahasa pemrograman golang
+- Portofolio pembuat
 
-## 🛠️ Hal yang diperhatikan dalam menambahkan unit test webservice
+## 🤔 Kapan repository ini akan selesai?
 
-- Mendefinisikan object mana yang akan dibuat testing atau target yang dipilih testing.
-- Membuat bentuk result/output dari suatu object yang ditest
-- Membuat fungsi untuk testing menggunakan package testify
-- Hasil pengeksekusian object yang dituju dibandingkan dengan target result/output yang telah dibuat
+Repository ini akan terus di*maintenance* dan di perbarui fiturnya dari pembuat,supaya pengetahuan pembuat akan terus meningkat seiiring berjalannya waktu.
+
+## ✅ Structure project
+
+### config/
+
+Berisi tentang object database,interface,dan method terkait koneksi database
+
+### controller/
+
+Berisi handler/controller yang digunakan untuk mengimplementasikan http method pada object model seperti :
+
+- GET
+- POST
+- PUT
+- DELETE
+
+### models/
+
+Berisi kumpulan object/struct yang digunakan untuk mengimplementasikan table di database
+
+### library/
+
+Berisi file init yang digunakan untuk menjalankan konfigurasi aplikasi yang berjalan pertama kali
+
+### repository/
+
+Berisi algoritma-algoritma yang digunakan untuk kebutuhan pengembangan.
+
+### test/
+
+Berisi file test client
+
+### utils/
+
+Berisi file yang digunakan untuk helper pada function lain
+
+## 🤓 Siapa pembuat repository ini?
+
+- LinkedIn : <a href="https://www.linkedin.com/in/dimas-ananda-riyadi/">Dimas Ananda Riyadi</a>
+- Instagram : <a href="https://www.instagram.com/dev_isaachx/">dev_isaachx</a>
+- YouTube : <a href="https://www.youtube.com/@devvictus2296">dev_isaachx</a>
