@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"simplewebservice/controller"
+	"simplewebservice/repository"
 	"simplewebservice/utils"
 )
 
 func main() {
+	fmt.Println(repository.QuickSort([]int{10, 2, 3, 18, 1920, 20}))
 	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
 
 		switch r.Method {
