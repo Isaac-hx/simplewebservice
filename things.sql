@@ -52,3 +52,34 @@ add constraint fk_customer
 foreign key (customer_id)
 references customers(customer_id)
 on delete cascade;
+
+--rename column table books
+alter table books
+rename column author to author_id;
+
+-- update type column books
+alter table books
+alter column author_id type int using author_id::int;
+
+
+-- delete column author_id
+alter table books
+drop column author_id;
+
+--add column author_id
+alter table books
+add column author_id int;
+
+-- add foreign key and constraint to table books
+alter table books
+add constraint fk_author
+foreign key (author_id)
+references author(author_id)
+on delete cascade;
+
+select * from books;
+
+create table author(
+author_id serial primary key,
+name varchar(255) not null
+);
