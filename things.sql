@@ -83,3 +83,8 @@ create table author(
 author_id serial primary key,
 name varchar(255) not null
 );
+
+
+update table books
+set author_id=1
+where id= 12;

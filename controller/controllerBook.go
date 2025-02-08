@@ -43,7 +43,7 @@ func Getbook(w http.ResponseWriter, r *http.Request) {
 		//Variabel penampung data pada setiap iterasi
 		var eachBook models.Book
 		//Menscan data yang diterima dan hasilnya nanti akan ditampung pada variabel eachbook
-		err = rows.Scan(&eachBook.ID, &eachBook.Title, &eachBook.Author, &eachBook.TotalPage, &eachBook.Publisher)
+		err = rows.Scan(&eachBook.ID, &eachBook.Title, &eachBook.AuthorId, &eachBook.TotalPage, &eachBook.Publisher)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
@@ -80,7 +80,7 @@ func GetBookById(w http.ResponseWriter, r *http.Request) {
 	// Menyiapkan SQL statement berdasarkan ID
 	//$1 merupakan placeholdar yang akan membinding parameter ke-1
 	query := "SELECT id, title, author, total_page, publisher FROM books WHERE id = $1"
-	err = db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.Author, &book.TotalPage, &book.Publisher)
+	err = db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.AuthorId, &book.TotalPage, &book.Publisher)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		log.Println("Query Error: ", err.Error())
@@ -128,7 +128,7 @@ func CreateBook(w http.ResponseWriter, r *http.Request) {
 		log.Println(http.StatusText(http.StatusBadRequest), http.StatusBadRequest, "Total data can't <= 0")
 		return
 	}
-	_, err = db.Exec("INSERT INTO books (title, author, total_page, publisher) VALUES ($1, $2, $3, $4)", parseData.Title, parseData.Author, int(parseData.TotalPage), parseData.Publisher)
+	_, err = db.Exec("INSERT INTO books (title, author, total_page, publisher) VALUES ($1, $2, $3, $4)", parseData.Title, parseData.AuthorId, int(parseData.TotalPage), parseData.Publisher)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())
@@ -170,7 +170,7 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 		publisher = $4
 	WHERE id = $5`
 
-	row, err := db.Exec(queryString, book.Title, book.Author, book.TotalPage, book.Publisher, id)
+	row, err := db.Exec(queryString, book.Title, book.AuthorId, book.TotalPage, book.Publisher, id)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err.Error())

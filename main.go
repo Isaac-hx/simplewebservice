@@ -1,42 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	"simplewebservice/controller"
-	"simplewebservice/repository"
+	"simplewebservice/router"
 	"simplewebservice/utils"
 )
 
 func main() {
-	fmt.Println(repository.QuickSort([]int{10, 2, 3, 18, 1920, 20}))
-	http.HandleFunc("/book", func(w http.ResponseWriter, r *http.Request) {
+	//initialising object servermux
+	mux := http.NewServeMux()
+	//registered route
+	router.AuthorRoute(mux)
+	router.BookRoute(mux)
 
-		switch r.Method {
-		case "GET":
-			//jika method GET terdeteksi memiliki query id
-			if id := r.URL.Query().Get("id"); id != "" {
-				controller.GetBookById(w, r)
-				return
-			}
-			controller.Getbook(w, r)
-		case "POST":
-			controller.CreateBook(w, r)
-		case "DELETE":
-			controller.DeleteBook(w, r)
-		case "PUT":
-			controller.UpdateBook(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
+	utils.ListRoute("/book", "/author")
+	log.Println("Service berjalan di localhost:8085/")
 
-	})
-	http.HandleFunc("/card", controller.CreateCardIdentity)
-	http.HandleFunc("/shape", controller.GetCalculateShape)
-	http.HandleFunc("/shape/rotate", controller.GetRotateShape)
-	utils.ListRoute("/book", "/shape", "/shape/rotate", "/card")
-	fmt.Println("Service berjalan di localhost:8085/")
-
-	http.ListenAndServe(":8085", nil)
+	http.ListenAndServe(":8085", mux)
 }
