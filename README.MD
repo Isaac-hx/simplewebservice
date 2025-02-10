@@ -19,36 +19,35 @@ Repository ini akan terus di*maintenance* dan di perbarui fiturnya dari pembuat,
 
 ### config/
 
-Berisi tentang object database,interface,dan method terkait koneksi database
+Folder konfigurasi database
 
-### controller/
+### internal/
 
-Berisi handler/controller yang digunakan untuk mengimplementasikan http method pada object model seperti :
-
-- GET
-- POST
-- PUT
-- DELETE
-
-### models/
-
-Berisi kumpulan object/struct yang digunakan untuk mengimplementasikan table di database
+Folder aplikasi yang dibuat untuk menangani service dari business model
 
 ### library/
 
-Berisi file init yang digunakan untuk menjalankan konfigurasi aplikasi yang berjalan pertama kali
+Folder berisi inisialisasi variabel environment
 
 ### repository/
 
-Berisi algoritma-algoritma yang digunakan untuk kebutuhan pengembangan.
+Folder berisi algoritma yang dikembangkan
+
+### router/
+
+Folder berisi routing table dari service model
+
+### service/
+
+Folder berisi business model pada object yang dibuat
 
 ### test/
 
-Berisi file test client
+Folder test yang digunakan untuk test query
 
 ### utils/
 
-Berisi file yang digunakan untuk helper pada function lain
+Folder untuk pendukung jalannya aplikasi atau utilisasi yang di reuse
 
 ## 🤓 Siapa pembuat repository ini?
 
