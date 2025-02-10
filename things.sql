@@ -85,6 +85,9 @@ name varchar(255) not null
 );
 
 
-update table books
+update books
 set author_id=1
 where id= 12;
+
+-- Inner join select table reference from author_id
+select * from books inner join authors on books.author_id = authors.author_id; 

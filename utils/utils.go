@@ -62,3 +62,13 @@ func LoadEnv() {
 		log.Fatal("Error while reading .env file", err.Error())
 	}
 }
+
+// parsing data from request
+func ParseTimeDate(dateString string) (time.Time, error) {
+	layoutFormat := "2006-01-02"
+	date, err := time.Parse(layoutFormat, dateString)
+	if err != nil {
+		return date, err
+	}
+	return date, err
+}

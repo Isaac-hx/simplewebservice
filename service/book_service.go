@@ -11,6 +11,13 @@ import (
 	"strconv"
 )
 
+type reqBook struct {
+	Title         string `json:"title"`
+	AuthorId      int    `json:"author_id"`
+	TotalPage     int    `json:"total_page"`
+	Description   string `json:"description"`
+	PublishedDate string `json:"published_date"`
+}
 type handlerBook struct {
 	book *book.Book
 }
@@ -87,12 +94,8 @@ func (handler *handlerBook) GetBookById(w http.ResponseWriter, r *http.Request) 
 
 func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
-	var bookReq struct {
-		Title       string `json:"title"`
-		AuthorId    int    `json:"author_id"`
-		TotalPage   int    `json:"total_page"`
-		Description string `json:"description"`
-	}
+	var bookReq reqBook
+
 	db, err := config.Connect(library.Postgres)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -115,17 +118,26 @@ func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 	}
 	reqBody := json.NewDecoder(r.Body)
 	reqBody.DisallowUnknownFields()
+	//parsing json to object bookReq
 	parseBody := reqBody.Decode(&bookReq)
 	if parseBody != nil {
 		http.Error(w, "Invalid format json!!", http.StatusBadRequest)
 		return
 	}
+	//parsing published string to time.Time
+	date, err := utils.ParseTimeDate(bookReq.PublishedDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	err = handler.book.CreateBook(db, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description)
+	//Call method create book from object handler
+	err = handler.book.CreateBook(db, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	message := map[string]interface{}{"Message": "Data created sucessfully!!"}
 	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -135,12 +147,7 @@ func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 func (handler *handlerBook) UpdateBookById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
-	var bookReq struct {
-		Title       string `json:"title"`
-		AuthorId    int    `json:"author_id"`
-		TotalPage   int    `json:"total_page"`
-		Description string `json:"description"`
-	}
+	var bookReq reqBook
 
 	db, err := config.Connect(library.Postgres)
 	if err != nil {
@@ -169,13 +176,19 @@ func (handler *handlerBook) UpdateBookById(w http.ResponseWriter, r *http.Reques
 	}
 	reqBody := json.NewDecoder(r.Body)
 	reqBody.DisallowUnknownFields()
+
 	parseBody := reqBody.Decode(&bookReq)
 	if parseBody != nil {
 		http.Error(w, "Invalid format json!!", http.StatusBadRequest)
 		return
 	}
+	date, err := utils.ParseTimeDate(bookReq.PublishedDate)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	err = handler.book.UpdateBookById(db, id, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description)
+	err = handler.book.UpdateBookById(db, id, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date)
 	if err != nil {
 		if err.Error() == "0" {
 			http.Error(w, "Book not updated!", http.StatusBadRequest)
