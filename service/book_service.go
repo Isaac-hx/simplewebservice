@@ -1,41 +1,41 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"mime"
 	"net/http"
-	"simplewebservice/config"
 	"simplewebservice/internal/book"
-	"simplewebservice/library"
 	"simplewebservice/utils"
 	"strconv"
 )
 
-type reqBook struct {
-	Title         string `json:"title"`
-	AuthorId      int    `json:"author_id"`
-	TotalPage     int    `json:"total_page"`
-	Description   string `json:"description"`
-	PublishedDate string `json:"published_date"`
+type responseJson struct {
+	Title         string  `json:"title"`
+	AuthorId      int     `json:"author_id"`
+	TotalPage     int     `json:"total_page"`
+	Description   string  `json:"description"`
+	PublishedDate string  `json:"published_date"`
+	Price         float64 `json:"price"`
+	CoverUrl      string  `json:"cover_url"`
 }
 type handlerBook struct {
 	book *book.Book
+	db   *sql.DB
 }
 
-func NewServeBook() *handlerBook {
+func NewServeBook(db *sql.DB) *handlerBook {
 	book := book.New()
-	return &handlerBook{book: book}
+	return &handlerBook{book: book, db: db}
 }
 
 func (handler *handlerBook) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
+	fmt.Println(handler.db)
+	//Connect database
+	defer handler.db.Close()
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
 	filterTotalPage := r.URL.Query().Get("total_page")
 	if filterTotalPage != "" {
 		n, err := strconv.Atoi(filterTotalPage)
@@ -43,7 +43,7 @@ func (handler *handlerBook) GetAllBooks(w http.ResponseWriter, r *http.Request) 
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		data, err := handler.book.SelectBookByFilter(db, n)
+		data, err := handler.book.SelectBookByFilter(handler.db, n)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -53,7 +53,7 @@ func (handler *handlerBook) GetAllBooks(w http.ResponseWriter, r *http.Request) 
 		json.NewEncoder(w).Encode(&data)
 	} else {
 
-		data, err := handler.book.GetAllBooks(db)
+		data, err := handler.book.GetAllBooks(handler.db)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -68,12 +68,8 @@ func (handler *handlerBook) GetAllBooks(w http.ResponseWriter, r *http.Request) 
 
 func (handler *handlerBook) GetBookById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+	defer handler.db.Close()
 
 	reqId := r.PathValue("id")
 	id, err := strconv.Atoi(reqId)
@@ -82,7 +78,7 @@ func (handler *handlerBook) GetBookById(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	data, err := handler.book.GetBookById(db, id)
+	data, err := handler.book.GetBookById(handler.db, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -94,14 +90,11 @@ func (handler *handlerBook) GetBookById(w http.ResponseWriter, r *http.Request) 
 
 func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
-	var bookReq reqBook
+	var bookReq responseJson
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+
+	defer handler.db.Close()
 
 	//enforce json type
 	contentType := r.Header.Get("Content-type")
@@ -119,6 +112,7 @@ func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 	reqBody := json.NewDecoder(r.Body)
 	reqBody.DisallowUnknownFields()
 	//parsing json to object bookReq
+
 	parseBody := reqBody.Decode(&bookReq)
 	if parseBody != nil {
 		http.Error(w, "Invalid format json!!", http.StatusBadRequest)
@@ -130,9 +124,14 @@ func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	//verify the url is valid image
 
+	if !utils.VerifyCoverUrl(bookReq.CoverUrl) {
+		http.Error(w, "Invalid cover url!!", http.StatusBadRequest)
+		return
+	}
 	//Call method create book from object handler
-	err = handler.book.CreateBook(db, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date)
+	err = handler.book.CreateBook(handler.db, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date, bookReq.Price, bookReq.CoverUrl)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -147,14 +146,11 @@ func (handler *handlerBook) CreateBook(w http.ResponseWriter, r *http.Request) {
 func (handler *handlerBook) UpdateBookById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
-	var bookReq reqBook
+	var bookReq responseJson
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+
+	defer handler.db.Close()
 	//enforce json type
 	contentType := r.Header.Get("Content-type")
 	mediaType, _, err := mime.ParseMediaType(contentType)
@@ -187,8 +183,12 @@ func (handler *handlerBook) UpdateBookById(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if !utils.VerifyCoverUrl(bookReq.CoverUrl) {
+		http.Error(w, "Invalid cover url!!", http.StatusBadRequest)
+		return
+	}
 
-	err = handler.book.UpdateBookById(db, id, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date)
+	err = handler.book.UpdateBookById(handler.db, id, bookReq.Title, bookReq.AuthorId, bookReq.TotalPage, bookReq.Description, date, bookReq.Price, bookReq.CoverUrl)
 	if err != nil {
 		if err.Error() == "0" {
 			http.Error(w, "Book not updated!", http.StatusBadRequest)
@@ -208,12 +208,9 @@ func (handler *handlerBook) UpdateBookById(w http.ResponseWriter, r *http.Reques
 func (handler *handlerBook) DeleteBookById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+
+	defer handler.db.Close()
 	reqId := r.PathValue("id")
 	id, err := strconv.Atoi(reqId)
 	if err != nil {
@@ -221,7 +218,7 @@ func (handler *handlerBook) DeleteBookById(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = handler.book.DeleteBookById(db, id)
+	err = handler.book.DeleteBookById(handler.db, id)
 	if err != nil {
 		if err.Error() == "0" {
 			http.Error(w, "Book not deleted!", http.StatusBadRequest)

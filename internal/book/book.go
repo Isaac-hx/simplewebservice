@@ -13,8 +13,11 @@ type Book struct {
 	TotalPage     string    `json:"total_page"`
 	Description   string    `json:"description"`
 	PublishedDate time.Time `json:"published_date"`
+	Price         float64   `json:"price"`
+	CoverUrl      string    `json:"cover_url"`
 }
 
+// call construct object book
 func New() *Book {
 	bookObject := &Book{}
 	return bookObject
@@ -34,7 +37,9 @@ func (b *Book) GetAllBooks(db *sql.DB) ([]BookWithAuthor, error) {
 	books.total_page,
 	books.description,
 	books.published_date,
-	authors.name FROM books 
+	books.price,
+	books.cover_url,
+	authors.name FROM books
 	INNER JOIN authors ON books.author_id=authors.author_id `
 	rows, err := db.Query(query)
 	if err != nil {
@@ -43,7 +48,8 @@ func (b *Book) GetAllBooks(db *sql.DB) ([]BookWithAuthor, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var eachBook BookWithAuthor
-		err := rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.AuthorId, &eachBook.TotalPage, &eachBook.Description, &eachBook.PublishedDate, &eachBook.AuthorName)
+		err := rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.AuthorId, &eachBook.TotalPage, &eachBook.Description, &eachBook.PublishedDate, &eachBook.Price, &eachBook.CoverUrl, &eachBook.AuthorName)
+
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +61,7 @@ func (b *Book) GetAllBooks(db *sql.DB) ([]BookWithAuthor, error) {
 func (b *Book) GetBookById(db *sql.DB, id int) (Book, error) {
 	var book Book
 	query := `SELECT * FROM books WHERE id=$1`
-	err := db.QueryRow(query, id).Scan(&book.Id, &book.Title, &book.AuthorId, &book.TotalPage, &book.Description, &book.PublishedDate)
+	err := db.QueryRow(query, id).Scan(&book.Id, &book.Title, &book.AuthorId, &book.TotalPage, &book.Description, &book.PublishedDate, &book.Price, &book.CoverUrl)
 	if err != nil {
 		return book, err
 
@@ -64,18 +70,18 @@ func (b *Book) GetBookById(db *sql.DB, id int) (Book, error) {
 	return book, nil
 }
 
-func (b *Book) CreateBook(db *sql.DB, title string, author_id int, total_page int, description string, published_date time.Time) error {
-	query := `INSERT INTO books(title,author_id,total_page,description,published_date) VALUES($1,$2,$3,$4,$5)`
-	_, err := db.Exec(query, title, author_id, total_page, description, published_date)
+func (b *Book) CreateBook(db *sql.DB, title string, author_id int, total_page int, description string, published_date time.Time, price float64, cover_url string) error {
+	query := `INSERT INTO books(title,author_id,total_page,description,published_date,price,cover_url) VALUES($1,$2,$3,$4,$5,$6,$7)`
+	_, err := db.Exec(query, title, author_id, total_page, description, published_date, price, cover_url)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *Book) UpdateBookById(db *sql.DB, id int, title string, author_id int, total_page int, description string, published_date time.Time) error {
-	query := `UPDATE books SET title=$1, author_id=$2, total_page=$3, description=$4,published_date=$5 WHERE id=$6`
-	row, err := db.Exec(query, title, author_id, total_page, description, published_date, id)
+func (b *Book) UpdateBookById(db *sql.DB, id int, title string, author_id int, total_page int, description string, published_date time.Time, price float64, cover_url string) error {
+	query := `UPDATE books SET title=$1, author_id=$2, total_page=$3, description=$4,published_date=$5,price=$6,cover_url=$7 WHERE id=$8`
+	row, err := db.Exec(query, title, author_id, total_page, description, published_date, price, cover_url, id)
 	if err != nil {
 		return err
 	}
@@ -123,7 +129,7 @@ func (b *Book) SelectBookByFilter(db *sql.DB, n int) ([]Book, error) {
 
 	for rows.Next() {
 		var eachBook Book
-		err = rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.AuthorId, &eachBook.TotalPage, &eachBook.Description, &eachBook.PublishedDate)
+		err = rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.AuthorId, &eachBook.TotalPage, &eachBook.Description, &eachBook.PublishedDate, &eachBook.CoverUrl, &eachBook.Price)
 		if err != nil {
 			return nil, err
 		}

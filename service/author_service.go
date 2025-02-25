@@ -2,42 +2,34 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/json"
-	"log"
 	"mime"
 	"net/http"
-	"simplewebservice/config"
 	"simplewebservice/internal/author"
-	"simplewebservice/library"
 	"simplewebservice/utils"
 	"strconv"
 )
 
 type handlerAuthor struct {
 	author *author.Author
+	db     *sql.DB
 }
 
-func NewServeAuthor() *handlerAuthor {
+func NewServeAuthor(db *sql.DB) *handlerAuthor {
 	author := author.New()
-	log.Println("berjalan")
-	return &handlerAuthor{author: author}
+	return &handlerAuthor{author: author, db: db}
 }
 func (handler *handlerAuthor) GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
 	//Connect database
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
+	defer handler.db.Close()
 	//Set content type
 	w.Header().Set("Content-type", "application/json")
 
 	//Querying select data
-	data, err := handler.author.GetAuthor(db)
+	data, err := handler.author.GetAuthor(handler.db)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -56,13 +48,7 @@ func (handler *handlerAuthor) CreateAuthor(w http.ResponseWriter, r *http.Reques
 	}
 
 	//Connect database
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
+	defer handler.db.Close()
 	//enforce json type
 	contentType := r.Header.Get("Content-type")
 	mediaType, _, err := mime.ParseMediaType(contentType)
@@ -87,7 +73,7 @@ func (handler *handlerAuthor) CreateAuthor(w http.ResponseWriter, r *http.Reques
 	}
 
 	//Querying create data
-	err = handler.author.CreateAuthor(db, authorReq.Name)
+	err = handler.author.CreateAuthor(handler.db, authorReq.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -103,12 +89,8 @@ func (handler *handlerAuthor) CreateAuthor(w http.ResponseWriter, r *http.Reques
 func (handler *handlerAuthor) GetAuthorById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+	defer handler.db.Close()
 	reqId := r.PathValue("id")
 	id, err := strconv.Atoi(reqId)
 	if err != nil {
@@ -116,7 +98,7 @@ func (handler *handlerAuthor) GetAuthorById(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	w.Header().Set("Content-type", "application/json")
-	data, err := handler.author.GetAuthorById(db, id)
+	data, err := handler.author.GetAuthorById(handler.db, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -129,19 +111,16 @@ func (handler *handlerAuthor) GetAuthorById(w http.ResponseWriter, r *http.Reque
 func (handler *handlerAuthor) DeleteAuthorById(w http.ResponseWriter, r *http.Request) {
 	utils.LogServer(r)
 
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+
+	defer handler.db.Close()
 	reqId := r.PathValue("id")
 	id, err := strconv.Atoi(reqId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = handler.author.DeleteAuthorById(db, id)
+	err = handler.author.DeleteAuthorById(handler.db, id)
 	if err != nil {
 		if err.Error() == "0" {
 			http.Error(w, "author not found!!", http.StatusNotFound)
@@ -165,12 +144,9 @@ func (handler *handlerAuthor) UpdateAuthorById(w http.ResponseWriter, r *http.Re
 	var authorReq struct {
 		Name string `json:"name"`
 	}
-	db, err := config.Connect(library.Postgres)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
+	//Connect database
+
+	defer handler.db.Close()
 	reqId := r.PathValue("id")
 	id, err := strconv.Atoi(reqId)
 	if err != nil {
@@ -182,11 +158,11 @@ func (handler *handlerAuthor) UpdateAuthorById(w http.ResponseWriter, r *http.Re
 	reqBody.DisallowUnknownFields()
 	parseReqBody := reqBody.Decode(&authorReq)
 	if parseReqBody != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error while parsing body!", http.StatusBadRequest)
 		return
 	}
 
-	err = handler.author.UpdateAuthorById(db, id, authorReq.Name)
+	err = handler.author.UpdateAuthorById(handler.db, id, authorReq.Name)
 	if err != nil {
 		if err.Error() == "0" {
 			http.Error(w, "Book not updated!", http.StatusBadRequest)

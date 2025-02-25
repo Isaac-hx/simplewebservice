@@ -5,9 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 const Path string = "/tmp/simplewebservice.log"
@@ -56,12 +55,18 @@ func ListRoute(dataRoute ...string) {
 	}
 }
 
-func LoadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error while reading .env file", err.Error())
-	}
-}
+// func LoadEnv() (config.PostgresDB, error) {
+// 	err := godotenv.Load()
+
+// 	Postgres := &config.PostgresDB{
+// 		Host:     host,
+// 		Port:     port,
+// 		Username: username,
+// 		Password: password,
+// 		DbName:   dbname,
+// 		SslMode:  sslmode}
+// 	return *Postgres, err
+// }
 
 // parsing data from request
 func ParseTimeDate(dateString string) (time.Time, error) {
@@ -71,4 +76,12 @@ func ParseTimeDate(dateString string) (time.Time, error) {
 		return date, err
 	}
 	return date, err
+}
+
+func VerifyCoverUrl(coverUrl string) bool {
+	regexVerifyUrl := regexp.MustCompile(`(?i)^https?:\/\/.*\.(png|jpg)$`)
+	isValid := regexVerifyUrl.MatchString(coverUrl)
+
+	return isValid
+
 }

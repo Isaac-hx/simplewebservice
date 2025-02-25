@@ -2,12 +2,13 @@
 package router
 
 import (
+	"database/sql"
 	"net/http"
 	"simplewebservice/service"
 )
 
-func BookRoute(mux *http.ServeMux) {
-	bookServer := service.NewServeBook()
+func BookRoute(mux *http.ServeMux, db *sql.DB) {
+	bookServer := service.NewServeBook(db)
 
 	mux.HandleFunc("GET /book", bookServer.GetAllBooks)
 	mux.HandleFunc("GET /book/{id}", bookServer.GetBookById)

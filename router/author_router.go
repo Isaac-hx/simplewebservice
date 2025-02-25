@@ -3,12 +3,13 @@
 package router
 
 import (
+	"database/sql"
 	"net/http"
 	"simplewebservice/service"
 )
 
-func AuthorRoute(mux *http.ServeMux) {
-	authorServer := service.NewServeAuthor()
+func AuthorRoute(mux *http.ServeMux, db *sql.DB) {
+	authorServer := service.NewServeAuthor(db)
 
 	mux.HandleFunc("GET /author", authorServer.GetAllAuthors)
 	mux.HandleFunc("POST /author", authorServer.CreateAuthor)

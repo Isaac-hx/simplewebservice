@@ -10,6 +10,7 @@ type Author struct {
 	Name string `json:"name"`
 }
 
+// call constructor object author
 func New() *Author {
 	authorObject := &Author{}
 	return authorObject
