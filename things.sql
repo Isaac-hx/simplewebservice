@@ -91,3 +91,6 @@ where id= 12;
 
 -- Inner join select table reference from author_id
 select * from books inner join authors on books.author_id = authors.author_id; 
+
+
+SELECT * from books ORDER BY id ASC;

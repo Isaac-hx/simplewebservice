@@ -33,6 +33,19 @@ func (ms *muxServer) Start() {
 
 	ms.app.HandleFunc("POST /v1/book", bookHandler.AddBook)
 	ms.app.HandleFunc("GET /v1/book/{id}", bookHandler.SearchBookById)
+	ms.app.HandleFunc("DELETE /v1/book/{id}", bookHandler.DeleteBookById)
+	ms.app.HandleFunc("PUT /v1/book/{id}", bookHandler.UpdateBookById)
+	ms.app.HandleFunc("GET /v1/book", bookHandler.FindAllBooks)
+
+	authorPostgresRepository := repositories.NewAuthorPostgresRepository(ms.db)
+	authorUsecaseImpl := usecases.NewAuthorUsecaseImpl(authorPostgresRepository)
+	authorHandler := handlers.NewAuthorHttpHandler(authorUsecaseImpl)
+
+	ms.app.HandleFunc("POST /v1/author", authorHandler.AddAuthor)
+	ms.app.HandleFunc("GET /v1/author/{id}", authorHandler.SearchAuthorById)
+	ms.app.HandleFunc("DELETE /v1/author/{id}", authorHandler.DeleteAuthorById)
+	ms.app.HandleFunc("PUT /v1/author/{id}", authorHandler.UpdateAuthorById)
+	ms.app.HandleFunc("GET /v1/author", authorHandler.FindAllAuthors)
 
 	serverPort := fmt.Sprintf(":%d", ms.conf.Server.Port)
 	log.Printf("Server running in addr %s", serverPort)

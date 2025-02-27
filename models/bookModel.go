@@ -16,7 +16,7 @@ type BookRequest struct {
 type BookResponse struct {
 	Id            int       `json:"id"`
 	Title         string    `json:"title"`
-	AuthorId      int       `json:"author_id"` //reference key from table authorss
+	AuthorName    string    `json:"author_name"` //reference key from table authorss
 	TotalPage     int       `json:"total_page"`
 	Description   string    `json:"description"`
 	PublishedDate time.Time `json:"published_date"`
