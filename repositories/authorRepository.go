@@ -1,6 +1,6 @@
 package repositories
 
-import "simplewebservice/internal/author"
+import "simplewebservice/author"
 
 type AuthorRepository interface {
 	InsertAuthorSQL(in *author.InsertAuthorDto) error

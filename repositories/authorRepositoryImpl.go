@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"simplewebservice/author"
 	"simplewebservice/database"
-	"simplewebservice/internal/author"
 )
 
 type authorPostgresRepository struct {
@@ -17,6 +17,8 @@ func NewAuthorPostgresRepository(db database.Database) AuthorRepository {
 }
 
 func (a *authorPostgresRepository) InsertAuthorSQL(in *author.InsertAuthorDto) error {
+	defer a.db.GetDb().Close()
+
 	query := `INSERT INTO authors(name) VALUES($1) `
 	_, err := a.db.GetDb().Exec(query, in.Name)
 	if err != nil {
@@ -26,6 +28,8 @@ func (a *authorPostgresRepository) InsertAuthorSQL(in *author.InsertAuthorDto) e
 }
 
 func (a *authorPostgresRepository) GetAuthorSQL(id int) (*author.GetBookDto, error) {
+	defer a.db.GetDb().Close()
+
 	var author author.GetBookDto
 	query := `SELECT id,name FROM authors WHERE id = $1`
 	err := a.db.GetDb().QueryRow(query, id).Scan(&author)
@@ -39,6 +43,8 @@ func (a *authorPostgresRepository) GetAuthorSQL(id int) (*author.GetBookDto, err
 }
 
 func (a *authorPostgresRepository) GetListAuthorSQL(param string) (*[]author.GetBookDto, error) {
+	defer a.db.GetDb().Close()
+
 	var authors []author.GetBookDto
 	query := fmt.Sprintf(`SELECT * FROM authors ORDER BY author_id %s`, param)
 	row, err := a.db.GetDb().Query(query)
@@ -58,6 +64,8 @@ func (a *authorPostgresRepository) GetListAuthorSQL(param string) (*[]author.Get
 }
 
 func (a *authorPostgresRepository) DeleteAuthorSQL(id int) error {
+	defer a.db.GetDb().Close()
+
 	query := `DELETE FROM authors WHERE author_id = $1`
 	row, err := a.db.GetDb().Exec(query, id)
 	if err != nil {
@@ -74,6 +82,8 @@ func (a *authorPostgresRepository) DeleteAuthorSQL(id int) error {
 }
 
 func (a *authorPostgresRepository) UpdateAuthorSQL(id int, in *author.InsertAuthorDto) error {
+	defer a.db.GetDb().Close()
+
 	query := `UPDATE authors SET name=$1 WHERE author_id=$2`
 	row, err := a.db.GetDb().Exec(query, in.Name, id)
 	if err != nil {

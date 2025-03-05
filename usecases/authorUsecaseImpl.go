@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"errors"
-	"log"
-	"simplewebservice/internal/author"
+	"html"
+	"simplewebservice/author"
 	"simplewebservice/models"
 	"simplewebservice/repositories"
 	"strings"
@@ -18,7 +18,7 @@ func NewAuthorUsecaseImpl(authorRepository repositories.AuthorRepository) *autho
 }
 func (a *authorUsecaseImpl) CreateAuthor(in *models.AuthorRequest) error {
 	var author author.InsertAuthorDto
-	author.Name = in.Name
+	author.Name = html.EscapeString(in.Name)
 	err := a.AuthorRepository.InsertAuthorSQL(&author)
 	if err != nil {
 		return err
@@ -41,7 +41,6 @@ func (a *authorUsecaseImpl) FindAllAuthor(param string) (*[]models.AuthorRespons
 	if strings.ToLower(param) != "asc" && strings.ToLower(param) != "desc" {
 		return nil, errors.New("0")
 	}
-	log.Println(param)
 	rows, err := a.AuthorRepository.GetListAuthorSQL(param)
 	if err != nil {
 		return nil, err
@@ -65,7 +64,7 @@ func (a *authorUsecaseImpl) DeleteAuthor(id int) error {
 
 func (a *authorUsecaseImpl) UpdateAuthor(id int, in *models.AuthorRequest) error {
 	var dto author.InsertAuthorDto
-	dto.Name = in.Name
+	dto.Name = html.EscapeString(in.Name)
 	err := a.AuthorRepository.UpdateAuthorSQL(id, &dto)
 	if err != nil {
 		return err

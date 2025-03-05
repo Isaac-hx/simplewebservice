@@ -2,7 +2,7 @@
 package repositories
 
 import (
-	"simplewebservice/internal/book"
+	"simplewebservice/book"
 )
 
 type BookRepository interface {

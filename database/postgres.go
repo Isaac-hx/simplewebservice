@@ -7,6 +7,7 @@ import (
 	"log"
 	"simplewebservice/config"
 	"sync"
+	"time"
 )
 
 type postgresDatabase struct {
@@ -31,6 +32,9 @@ func (p *postgresDatabase) TestPing() {
 	}
 	log.Println("Sucess connected to database!")
 }
+func (p *postgresDatabase) GetStat() {
+	log.Println(p.Db.Stats())
+}
 
 // constructor for struct PostgresDatabase
 // return type interface database
@@ -49,6 +53,11 @@ func NewDatabasePostgres(conf *config.Config) Database {
 		if err != nil {
 			panic("Failed to connect database!")
 		}
+		//Pool connections configuration
+		db.SetMaxOpenConns(conf.Pool.MaxOpenConns)
+		db.SetMaxIdleConns(conf.Pool.MaxIdleConns)
+		db.SetConnMaxLifetime(time.Duration(conf.Pool.MaxOpenConnsLifetime) * time.Minute)
+		db.SetConnMaxIdleTime(time.Duration(conf.Pool.MaxIdleConnsLifetime) * time.Minute)
 
 		dbInstance = &postgresDatabase{Db: db}
 	})

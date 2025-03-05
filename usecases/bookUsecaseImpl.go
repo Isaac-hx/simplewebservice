@@ -2,7 +2,8 @@ package usecases
 
 import (
 	"errors"
-	"simplewebservice/internal/book"
+	"html"
+	"simplewebservice/book"
 	"simplewebservice/models"
 	"simplewebservice/repositories"
 	"simplewebservice/utils"
@@ -26,13 +27,13 @@ func (u *bookUsecaseImpl) CreateBook(in *models.BookRequest) error {
 	}
 
 	dto := &book.InsertBookDto{
-		Title:         in.Title,
-		Description:   in.Description,
+		Title:         html.EscapeString(in.Title),
+		Description:   html.EscapeString(in.Description),
 		TotalPage:     in.TotalPage,
 		AuthorId:      in.AuthorId,
 		PublishedDate: published_date,
 		Price:         in.Price,
-		CoverUrl:      in.CoverUrl,
+		CoverUrl:      html.EscapeString(in.CoverUrl),
 	}
 	//Perform logic business here\
 
@@ -68,13 +69,13 @@ func (u *bookUsecaseImpl) EditBook(id int, in *models.BookRequest) error {
 		return err
 	}
 	dto := &book.InsertBookDto{
-		Title:         in.Title,
-		Description:   in.Description,
+		Title:         html.EscapeString(in.Title),
+		Description:   html.EscapeString(in.Description),
 		AuthorId:      in.AuthorId,
 		TotalPage:     in.TotalPage,
 		PublishedDate: published_date,
 		Price:         in.Price,
-		CoverUrl:      in.CoverUrl,
+		CoverUrl:      html.EscapeString(in.CoverUrl),
 	}
 	err = u.BookRepository.UpdateBookSQL(id, dto)
 	if err != nil {

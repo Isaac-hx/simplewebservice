@@ -4,6 +4,7 @@ package config
 import (
 	"log"
 	"os"
+	"simplewebservice/utils"
 	"strconv"
 	"sync"
 
@@ -25,11 +26,18 @@ type Db struct {
 	SSLMode  string
 	TimeZone string
 }
+type Pool struct {
+	MaxOpenConns         int
+	MaxIdleConns         int
+	MaxOpenConnsLifetime int
+	MaxIdleConnsLifetime int
+}
 
 // Instance for object Config
 type Config struct {
 	Server *Server
 	Db     *Db
+	Pool   *Pool
 }
 
 var (
@@ -65,9 +73,21 @@ func GetConfig() *Config {
 			log.Fatalf("Error from parsing data .env!,%v", err.Error())
 
 		}
+
+		//pool config
+		maxOpenCons := os.Getenv("MAX_OPEN_CONS")
+		maxIdleCons := os.Getenv("MAX_IDLE_CONS")
+		maxOpenLifetime := os.Getenv("MAX_OPENS_LIFETIME")
+		maxIdleLifetime := os.Getenv("MAX_IDLE_LIFETIME")
+		arrPool, err := utils.ConvertInt(maxOpenCons, maxIdleCons, maxOpenLifetime, maxIdleLifetime)
+		if err != nil {
+			log.Fatal("Error from parsing data .env!,%v", err.Error())
+		}
+
 		configInstance = &Config{
 			Db:     &Db{Host: host, User: username, Password: password, DBName: dbname, Port: dbPort, SSLMode: sslmode, TimeZone: timezone},
 			Server: &Server{Port: serverPort},
+			Pool:   &Pool{MaxOpenConns: arrPool[0], MaxIdleConns: arrPool[1], MaxOpenConnsLifetime: arrPool[2], MaxIdleConnsLifetime: arrPool[3]},
 		}
 
 	})

@@ -3,8 +3,8 @@ package migrations
 
 import (
 	"log"
+	"simplewebservice/book"
 	"simplewebservice/database"
-	"simplewebservice/internal/book"
 	"time"
 )
 

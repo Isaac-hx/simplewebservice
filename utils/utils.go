@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -84,4 +85,17 @@ func VerifyCoverUrl(coverUrl string) bool {
 
 	return isValid
 
+}
+
+func ConvertInt(n ...string) ([]int, error) {
+	var res []int
+	for _, data := range n {
+		convInt, err := strconv.Atoi(data)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, convInt)
+
+	}
+	return res, nil
 }

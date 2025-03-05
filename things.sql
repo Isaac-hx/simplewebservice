@@ -94,3 +94,6 @@ select * from books inner join authors on books.author_id = authors.author_id;
 
 
 SELECT * from books ORDER BY id ASC;
+
+credentials :
+postgresql://database-golang_owner:npg_ROV8viep2KqS@ep-tight-art-a1l77oje-pooler.ap-southeast-1.aws.neon.tech/database-golang?sslmode=require]

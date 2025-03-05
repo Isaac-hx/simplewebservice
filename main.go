@@ -36,7 +36,7 @@ func main() {
 	conf := config.GetConfig()
 	// Inializing database
 	db := database.NewDatabasePostgres(conf)
-
+	db.GetStat()
 	//Run application
 	server.NewServerMux(conf, db).Start()
 
