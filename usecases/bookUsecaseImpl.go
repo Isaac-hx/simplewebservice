@@ -5,7 +5,7 @@ import (
 	"html"
 	"simplewebservice/book"
 	"simplewebservice/models"
-	"simplewebservice/repositories"
+	repositories "simplewebservice/repositories/book"
 	"simplewebservice/utils"
 	"strings"
 )

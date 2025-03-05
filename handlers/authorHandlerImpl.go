@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -50,8 +51,8 @@ func (a *authorHttpHandler) SearchAuthorById(w http.ResponseWriter, r *http.Requ
 	}
 	authors, err := a.authorUsecase.FindAuthor(id)
 	if err != nil {
-		switch err.Error() {
-		case "0":
+		switch err {
+		case sql.ErrNoRows:
 			log.Printf("Error :%v", err.Error())
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return

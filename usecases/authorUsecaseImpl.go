@@ -5,7 +5,7 @@ import (
 	"html"
 	"simplewebservice/author"
 	"simplewebservice/models"
-	"simplewebservice/repositories"
+	repositories "simplewebservice/repositories/author"
 	"strings"
 )
 
@@ -32,6 +32,7 @@ func (a *authorUsecaseImpl) FindAuthor(id int) (*models.AuthorResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	author.Id = row.Id
 	author.Name = row.Name
 	return &author, nil
 }

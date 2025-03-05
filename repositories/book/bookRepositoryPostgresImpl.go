@@ -14,7 +14,6 @@ type bookPostgresRepository struct {
 
 // Method from object bookPostgresRepository
 func (b *bookPostgresRepository) InsertBookSQL(in *book.InsertBookDto) error {
-	defer b.db.GetDb().Close()
 
 	query := "INSERT INTO books(title,author_id,total_page,description,published_date,price,cover_url) VALUES($1,$2,$3,$4,$5,$6,$7)"
 	_, err := b.db.GetDb().Exec(query, in.Title, in.AuthorId, in.TotalPage, in.Description, in.PublishedDate, in.Price, in.CoverUrl)
@@ -26,7 +25,6 @@ func (b *bookPostgresRepository) InsertBookSQL(in *book.InsertBookDto) error {
 }
 
 func (b *bookPostgresRepository) GetBookSQL(id int) (*book.GetBookDto, error) {
-	defer b.db.GetDb().Close()
 
 	var book book.GetBookDto
 	query := `SELECT 
@@ -50,7 +48,6 @@ func (b *bookPostgresRepository) GetBookSQL(id int) (*book.GetBookDto, error) {
 }
 
 func (b *bookPostgresRepository) DeleteBookSQL(id int) error {
-	defer b.db.GetDb().Close()
 
 	query := "DELETE FROM books WHERE id = $1"
 	row, err := b.db.GetDb().Exec(query, id)
@@ -69,7 +66,6 @@ func (b *bookPostgresRepository) DeleteBookSQL(id int) error {
 }
 
 func (b *bookPostgresRepository) UpdateBookSQL(id int, in *book.InsertBookDto) error {
-	defer b.db.GetDb().Close()
 
 	query := `UPDATE books 
 	SET title=$1,
@@ -96,7 +92,6 @@ func (b *bookPostgresRepository) UpdateBookSQL(id int, in *book.InsertBookDto) e
 }
 
 func (b *bookPostgresRepository) GetListBookSQL(param string) (*[]book.GetBookDto, error) {
-	defer b.db.GetDb().Close()
 
 	var books []book.GetBookDto
 	query := fmt.Sprintf(`SELECT 

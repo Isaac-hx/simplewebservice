@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"simplewebservice/config"
 	"simplewebservice/database"
-	"simplewebservice/handlers"
-	"simplewebservice/repositories"
-	"simplewebservice/usecases"
+	"simplewebservice/router"
+
 	"simplewebservice/utils"
 )
 
@@ -26,26 +25,11 @@ func (ms *muxServer) Start() {
 		w.Write([]byte("OK!"))
 	})
 
-	//Initialize object NewBookPostgresRepository
-	bookPostgresRepository := repositories.NewBookPostgresRepository(ms.db)
-	bookUsecaseImpl := usecases.NewBookUsecaseImpl(bookPostgresRepository)
-	bookHandler := handlers.NewBookHttpHandler(bookUsecaseImpl)
-
-	ms.app.HandleFunc("POST /v1/book", bookHandler.AddBook)
-	ms.app.HandleFunc("GET /v1/book/{id}", bookHandler.SearchBookById)
-	ms.app.HandleFunc("DELETE /v1/book/{id}", bookHandler.DeleteBookById)
-	ms.app.HandleFunc("PUT /v1/book/{id}", bookHandler.UpdateBookById)
-	ms.app.HandleFunc("GET /v1/book", bookHandler.FindAllBooks)
-
-	authorPostgresRepository := repositories.NewAuthorPostgresRepository(ms.db)
-	authorUsecaseImpl := usecases.NewAuthorUsecaseImpl(authorPostgresRepository)
-	authorHandler := handlers.NewAuthorHttpHandler(authorUsecaseImpl)
-
-	ms.app.HandleFunc("POST /v1/author", authorHandler.AddAuthor)
-	ms.app.HandleFunc("GET /v1/author/{id}", authorHandler.SearchAuthorById)
-	ms.app.HandleFunc("DELETE /v1/author/{id}", authorHandler.DeleteAuthorById)
-	ms.app.HandleFunc("PUT /v1/author/{id}", authorHandler.UpdateAuthorById)
-	ms.app.HandleFunc("GET /v1/author", authorHandler.FindAllAuthors)
+	//Initialize object route
+	bookRoute := router.NewBookRoute()
+	bookRoute.ListBookRoute(ms.db, ms.app)
+	authorRoute := router.NewAuthorRouter()
+	authorRoute.ListAuthorRoute(ms.db, ms.app)
 
 	serverPort := fmt.Sprintf(":%d", ms.conf.Server.Port)
 	log.Printf("Server running in addr %s", serverPort)

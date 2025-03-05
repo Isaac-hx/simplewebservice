@@ -17,7 +17,6 @@ func NewAuthorPostgresRepository(db database.Database) AuthorRepository {
 }
 
 func (a *authorPostgresRepository) InsertAuthorSQL(in *author.InsertAuthorDto) error {
-	defer a.db.GetDb().Close()
 
 	query := `INSERT INTO authors(name) VALUES($1) `
 	_, err := a.db.GetDb().Exec(query, in.Name)
@@ -28,14 +27,13 @@ func (a *authorPostgresRepository) InsertAuthorSQL(in *author.InsertAuthorDto) e
 }
 
 func (a *authorPostgresRepository) GetAuthorSQL(id int) (*author.GetBookDto, error) {
-	defer a.db.GetDb().Close()
 
 	var author author.GetBookDto
-	query := `SELECT id,name FROM authors WHERE id = $1`
-	err := a.db.GetDb().QueryRow(query, id).Scan(&author)
+	query := `SELECT author_id,name FROM authors WHERE author_id = $1`
+	err := a.db.GetDb().QueryRow(query, id).Scan(&author.Id, &author.Name)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("0")
+			return nil, sql.ErrNoRows
 		}
 		return nil, err
 	}
@@ -43,7 +41,6 @@ func (a *authorPostgresRepository) GetAuthorSQL(id int) (*author.GetBookDto, err
 }
 
 func (a *authorPostgresRepository) GetListAuthorSQL(param string) (*[]author.GetBookDto, error) {
-	defer a.db.GetDb().Close()
 
 	var authors []author.GetBookDto
 	query := fmt.Sprintf(`SELECT * FROM authors ORDER BY author_id %s`, param)
@@ -64,7 +61,6 @@ func (a *authorPostgresRepository) GetListAuthorSQL(param string) (*[]author.Get
 }
 
 func (a *authorPostgresRepository) DeleteAuthorSQL(id int) error {
-	defer a.db.GetDb().Close()
 
 	query := `DELETE FROM authors WHERE author_id = $1`
 	row, err := a.db.GetDb().Exec(query, id)
@@ -82,7 +78,6 @@ func (a *authorPostgresRepository) DeleteAuthorSQL(id int) error {
 }
 
 func (a *authorPostgresRepository) UpdateAuthorSQL(id int, in *author.InsertAuthorDto) error {
-	defer a.db.GetDb().Close()
 
 	query := `UPDATE authors SET name=$1 WHERE author_id=$2`
 	row, err := a.db.GetDb().Exec(query, in.Name, id)
