@@ -21,10 +21,7 @@ func NewBookUsecaseImpl(bookRepository repositories.BookRepository) *bookUsecase
 }
 
 func (u *bookUsecaseImpl) CreateBook(in *models.BookRequest) error {
-	published_date, err := utils.ParseTimeDate(in.PublishedDate)
-	if err != nil {
-		return err
-	}
+	published_date := utils.ParseDate(in.PublishedDate)
 
 	dto := &book.InsertBookDto{
 		Title:         html.EscapeString(in.Title),
@@ -37,7 +34,7 @@ func (u *bookUsecaseImpl) CreateBook(in *models.BookRequest) error {
 	}
 	//Perform logic business here\
 
-	err = u.BookRepository.InsertBookSQL(dto)
+	err := u.BookRepository.InsertBookSQL(dto)
 	if err != nil {
 		return err
 	}
@@ -64,10 +61,8 @@ func (u *bookUsecaseImpl) DeleteBook(id int) error {
 
 }
 func (u *bookUsecaseImpl) EditBook(id int, in *models.BookRequest) error {
-	published_date, err := utils.ParseTimeDate(in.PublishedDate)
-	if err != nil {
-		return err
-	}
+	published_date := utils.ParseDate(in.PublishedDate)
+
 	dto := &book.InsertBookDto{
 		Title:         html.EscapeString(in.Title),
 		Description:   html.EscapeString(in.Description),
@@ -77,7 +72,7 @@ func (u *bookUsecaseImpl) EditBook(id int, in *models.BookRequest) error {
 		Price:         in.Price,
 		CoverUrl:      html.EscapeString(in.CoverUrl),
 	}
-	err = u.BookRepository.UpdateBookSQL(id, dto)
+	err := u.BookRepository.UpdateBookSQL(id, dto)
 	if err != nil {
 		return err
 	}
