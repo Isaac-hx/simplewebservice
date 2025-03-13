@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html"
 	"simplewebservice/book"
+	"simplewebservice/helper"
 	"simplewebservice/models"
 	repositories "simplewebservice/repositories/book"
 	"simplewebservice/utils"
@@ -21,20 +22,28 @@ func NewBookUsecaseImpl(bookRepository repositories.BookRepository) *bookUsecase
 }
 
 func (u *bookUsecaseImpl) CreateBook(in *models.BookRequest) error {
-	published_date := utils.ParseDate(in.PublishedDate)
+	//parse data published_date to type time.time
+	published_date, err := utils.ParseDate(in.PublishedDate)
+	if err != nil {
+		return helper.ErrInvalidDateType
+	}
+
+	//check if cover is image or no
+	if verifyCoverUrl := utils.VerifyCoverUrl(in.CoverUrl); !verifyCoverUrl {
+		return helper.ErrInvalidCoverUrl
+	}
 
 	dto := &book.InsertBookDto{
 		Title:         html.EscapeString(in.Title),
 		Description:   html.EscapeString(in.Description),
 		TotalPage:     in.TotalPage,
 		AuthorId:      in.AuthorId,
-		PublishedDate: published_date,
+		PublishedDate: *published_date,
 		Price:         in.Price,
 		CoverUrl:      html.EscapeString(in.CoverUrl),
 	}
-	//Perform logic business here\
-
-	err := u.BookRepository.InsertBookSQL(dto)
+	//Perform logic business here
+	err = u.BookRepository.InsertBookSQL(dto)
 	if err != nil {
 		return err
 	}
@@ -61,18 +70,20 @@ func (u *bookUsecaseImpl) DeleteBook(id int) error {
 
 }
 func (u *bookUsecaseImpl) EditBook(id int, in *models.BookRequest) error {
-	published_date := utils.ParseDate(in.PublishedDate)
-
+	published_date, err := utils.ParseDate(in.PublishedDate)
+	if err != nil {
+		return err
+	}
 	dto := &book.InsertBookDto{
 		Title:         html.EscapeString(in.Title),
 		Description:   html.EscapeString(in.Description),
 		AuthorId:      in.AuthorId,
 		TotalPage:     in.TotalPage,
-		PublishedDate: published_date,
+		PublishedDate: *published_date,
 		Price:         in.Price,
 		CoverUrl:      html.EscapeString(in.CoverUrl),
 	}
-	err := u.BookRepository.UpdateBookSQL(id, dto)
+	err = u.BookRepository.UpdateBookSQL(id, dto)
 	if err != nil {
 		return err
 	}

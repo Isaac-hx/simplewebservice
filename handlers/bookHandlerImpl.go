@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"simplewebservice/helper"
 	"simplewebservice/models"
 	"simplewebservice/usecases"
 	"strconv"
@@ -28,12 +30,21 @@ func (h *bookHttpHandler) AddBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	err = h.bookUsecase.CreateBook(&reqBody)
 	if err != nil {
-		log.Printf("Error :%v", err.Error())
+		if errors.Is(err, helper.ErrInvalidCoverUrl) || errors.Is(err, helper.ErrInvalidDateType) {
+			log.Printf("Error :%v", err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+
+		}
+		log.Printf("Error : %v", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+
 	}
+
 	w.WriteHeader(200)
 	w.Write([]byte("Book created!"))
 }

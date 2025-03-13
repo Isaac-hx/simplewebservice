@@ -71,12 +71,12 @@ func ListRoute(dataRoute ...string) {
 
 // parsing data from request
 
-func ParseDate(dateStr string) time.Time {
+func ParseDate(dateStr string) (*time.Time, error) {
 	publishedDate, err := time.Parse("2006-01-02 15:04:05", dateStr)
 	if err != nil {
-		log.Fatalf("Error parsing date: %v", err)
+		return nil, err
 	}
-	return publishedDate
+	return &publishedDate, nil
 }
 
 func VerifyCoverUrl(coverUrl string) bool {
