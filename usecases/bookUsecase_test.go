@@ -15,7 +15,7 @@ import (
 var repo = repositories.MockRepositoryBook{mock.Mock{}}
 var testUsecaseBook = NewBookUsecaseImpl(&repo)
 
-func TestInsertBook(t *testing.T) {
+func TestInsertBook_Success(t *testing.T) {
 	dataBook := models.BookRequest{
 		AuthorId:      1,
 		Title:         "Sapiens: Riwayat Singkat Umat Manusia",
@@ -39,8 +39,30 @@ func TestInsertBook(t *testing.T) {
 		Price:         dataBook.Price,
 		CoverUrl:      html.EscapeString(dataBook.CoverUrl),
 	}
-	repo.Mock.On("InsertBookSQL", expectedDto).Return(nil)
-	err := testUsecaseBook.CreateBook(&dataBook)
-	assert.NoError(t, err)
-	repo.Mock.AssertExpectations(t)
+	t.Run("Success", func(t *testing.T) {
+		repo.Mock.On("InsertBookSQL", expectedDto).Return(nil)
+		err := testUsecaseBook.CreateBook(&dataBook)
+		assert.NoError(t, err)
+		repo.Mock.AssertExpectations(t)
+	})
+	t.Run("Invalid published date", func(t *testing.T) {
+		invalidBook := models.BookRequest{
+			AuthorId:      1,
+			Title:         "Sapiens: Riwayat Singkat Umat Manusia",
+			Description:   "Narasi revolusioner tentang penciptaan dan evolusi umat manusia",
+			TotalPage:     544,
+			PublishedDate: "invalid-date",
+			Price:         200000,
+			CoverUrl:      "https://m.media-amazon.com/images/I/713jIoMO3UL.jpg",
+		}
+		testcase := testUsecaseBook.CreateBook(&invalidBook)
+		assert.Error(t, testcase)
+		assert.Contains(t, testcase.Error(), "invalid date type")
+		repo.Mock.AssertExpectations(t)
+
+	})
+}
+
+func TestInsertBook_Failed(t *testing.T) {
+
 }
