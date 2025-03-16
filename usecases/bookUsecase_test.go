@@ -15,7 +15,7 @@ import (
 var repo = repositories.MockRepositoryBook{mock.Mock{}}
 var testUsecaseBook = NewBookUsecaseImpl(&repo)
 
-func TestInsertBook_Success(t *testing.T) {
+func TestInsertBook(t *testing.T) {
 	dataBook := models.BookRequest{
 		AuthorId:      1,
 		Title:         "Sapiens: Riwayat Singkat Umat Manusia",
@@ -45,7 +45,9 @@ func TestInsertBook_Success(t *testing.T) {
 		assert.NoError(t, err)
 		repo.Mock.AssertExpectations(t)
 	})
-	t.Run("Invalid published date", func(t *testing.T) {
+
+	//negative test case
+	t.Run("InvalidPublishedDate", func(t *testing.T) {
 		invalidBook := models.BookRequest{
 			AuthorId:      1,
 			Title:         "Sapiens: Riwayat Singkat Umat Manusia",
@@ -62,30 +64,19 @@ func TestInsertBook_Success(t *testing.T) {
 
 	})
 
-	// t.Run("Empty title", func(t *testing.T) {
-	// 	invalidBook := models.BookRequest{
-	// 		AuthorId:      1,
-	// 		Title:         "",
-	// 		Description:   "Narasi revolusioner tentang penciptaan dan evolusi umat manusia",
-	// 		TotalPage:     544,
-	// 		PublishedDate: "2014-09-04 00:00:00",
-	// 		Price:         200000,
-	// 		CoverUrl:      "https://m.media-amazon.com/images/I/713jIoMO3UL.jpg",
-	// 	}
-	// 	expectedData := &book.InsertBookDto{
-	// 		Title:         html.EscapeString(dataBook.Title),
-	// 		Description:   html.EscapeString(dataBook.Description),
-	// 		TotalPage:     dataBook.TotalPage,
-	// 		AuthorId:      dataBook.AuthorId,
-	// 		PublishedDate: *publishedDate,
-	// 		Price:         dataBook.Price,
-	// 		CoverUrl:      html.EscapeString(dataBook.CoverUrl),
-	// 	}
+	t.Run("InvalidCoverUrl", func(t *testing.T) {
+		invalidBook := models.BookRequest{
 
-	// 	repo.Mock.On("InsertBookSQL", expectedData).Return(errors.New("database error"))
-	// 	testcase := testUsecaseBook.CreateBook(&invalidBook)
-	// 	assert.Error(t, testcase)
-	// 	repo.Mock.AssertExpectations(t)
-
-	// })
+			AuthorId:      1,
+			Title:         "Sapiens: Riwayat Singkat Umat Manusia",
+			Description:   "Narasi revolusioner tentang penciptaan dan evolusi umat manusia",
+			TotalPage:     544,
+			PublishedDate: "2014-09-04 00:00:00",
+			Price:         200000,
+			CoverUrl:      "https://m.media-amazon.com/images/I/713jIoMO3UL.gif",
+		}
+		testCase := testUsecaseBook.CreateBook(&invalidBook)
+		assert.Error(t, testCase)
+		assert.Contains(t, testCase.Error(), "invalid cover url")
+	})
 }
