@@ -49,6 +49,7 @@ var (
 func GetConfig() *Config {
 	//This method only run once
 	once.Do(func() {
+		//to test this function you must insert argument `../.env` in godotenv.Load
 		err := godotenv.Load("../.env")
 		if err != nil {
 			log.Fatalf("Error from read .env file !,%v", err.Error())
