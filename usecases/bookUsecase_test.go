@@ -61,8 +61,31 @@ func TestInsertBook_Success(t *testing.T) {
 		repo.Mock.AssertExpectations(t)
 
 	})
-}
 
-func TestInsertBook_Failed(t *testing.T) {
+	// t.Run("Empty title", func(t *testing.T) {
+	// 	invalidBook := models.BookRequest{
+	// 		AuthorId:      1,
+	// 		Title:         "",
+	// 		Description:   "Narasi revolusioner tentang penciptaan dan evolusi umat manusia",
+	// 		TotalPage:     544,
+	// 		PublishedDate: "2014-09-04 00:00:00",
+	// 		Price:         200000,
+	// 		CoverUrl:      "https://m.media-amazon.com/images/I/713jIoMO3UL.jpg",
+	// 	}
+	// 	expectedData := &book.InsertBookDto{
+	// 		Title:         html.EscapeString(dataBook.Title),
+	// 		Description:   html.EscapeString(dataBook.Description),
+	// 		TotalPage:     dataBook.TotalPage,
+	// 		AuthorId:      dataBook.AuthorId,
+	// 		PublishedDate: *publishedDate,
+	// 		Price:         dataBook.Price,
+	// 		CoverUrl:      html.EscapeString(dataBook.CoverUrl),
+	// 	}
 
+	// 	repo.Mock.On("InsertBookSQL", expectedData).Return(errors.New("database error"))
+	// 	testcase := testUsecaseBook.CreateBook(&invalidBook)
+	// 	assert.Error(t, testcase)
+	// 	repo.Mock.AssertExpectations(t)
+
+	// })
 }

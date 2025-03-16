@@ -3,13 +3,12 @@ package config
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGetConfg(t *testing.T) {
-	t.Run("Success", func(t *testing.T) {
+func TestGetConfig(t *testing.T) {
+	t.Run("Succes load file config", func(t *testing.T) {
 		config := GetConfig()
-		require.NotNil(t, config, "Config should not be nil!")
-
+		assert.NotNil(t, config)
 	})
 }

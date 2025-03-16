@@ -49,7 +49,7 @@ var (
 func GetConfig() *Config {
 	//This method only run once
 	once.Do(func() {
-		err := godotenv.Load()
+		err := godotenv.Load("../.env")
 		if err != nil {
 			log.Fatalf("Error from read .env file !,%v", err.Error())
 		}
@@ -81,7 +81,7 @@ func GetConfig() *Config {
 		maxIdleLifetime := os.Getenv("MAX_IDLE_LIFETIME")
 		arrPool, err := utils.ConvertInt(maxOpenCons, maxIdleCons, maxOpenLifetime, maxIdleLifetime)
 		if err != nil {
-			log.Fatal("Error from parsing data .env!,%v", err.Error())
+			log.Fatalf("Error from parsing data .env!,%v", err.Error())
 		}
 
 		configInstance = &Config{
