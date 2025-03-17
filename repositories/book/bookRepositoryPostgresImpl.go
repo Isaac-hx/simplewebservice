@@ -39,7 +39,7 @@ func (b *bookPostgresRepository) GetBookSQL(id int) (*book.GetBookDto, error) {
 	err := b.db.GetDb().QueryRow(query, id).Scan(&book.Id, &book.Title, &book.AuthorName, &book.TotalPage, &book.Description, &book.PublishedDate, &book.Price, &book.CoverUrl)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("0")
+			return nil, sql.ErrNoRows
 		}
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (b *bookPostgresRepository) DeleteBookSQL(id int) error {
 		return err
 	}
 	if rowAffected == 0 {
-		return errors.New("0")
+		return sql.ErrNoRows
 
 	}
 	return nil
@@ -96,7 +96,8 @@ func (b *bookPostgresRepository) GetListBookSQL(param string) (*[]book.GetBookDt
 	var books []book.GetBookDto
 	query := fmt.Sprintf(`SELECT 
     books.id, books.title,
-    books.price, books.cover_url, authors.name 
+    books.price, books.cover_url, authors.name,
+	books.total_page,books.description,books.published_date 
     FROM books 
     INNER JOIN authors 
     ON books.author_id = authors.author_id
@@ -109,7 +110,7 @@ func (b *bookPostgresRepository) GetListBookSQL(param string) (*[]book.GetBookDt
 
 	for rows.Next() {
 		var eachBook book.GetBookDto
-		err := rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.Price, &eachBook.CoverUrl, &eachBook.AuthorName)
+		err := rows.Scan(&eachBook.Id, &eachBook.Title, &eachBook.Price, &eachBook.CoverUrl, &eachBook.AuthorName, &eachBook.TotalPage, &eachBook.Description, &eachBook.PublishedDate)
 		if err != nil {
 			return nil, err
 		}

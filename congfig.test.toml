@@ -1,0 +1,25 @@
+[server]
+app_name="Book Management"
+mode = "info"
+port = "8085"
+http_timeout = 60
+cache_expired = 24
+cache_purged = 60
+
+[database]
+db_driver = "postgres"
+db_host = "localhost"
+db_port = "5432"
+db_name = "database-golang"
+db_username = "isaaachx"
+db_password = "saydimas78"
+db_timezone = "Asia/Jakarta"
+
+[pool]
+conn_idle = 4
+conn_max = 8
+conn_lifetime = 10
+
+[jwt]
+day_expired = 60
+signature_key = "SuperShy!"

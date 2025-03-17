@@ -56,23 +56,8 @@ func ListRoute(dataRoute ...string) {
 	}
 }
 
-// func LoadEnv() (config.PostgresDB, error) {
-// 	err := godotenv.Load()
-
-// 	Postgres := &config.PostgresDB{
-// 		Host:     host,
-// 		Port:     port,
-// 		Username: username,
-// 		Password: password,
-// 		DbName:   dbname,
-// 		SslMode:  sslmode}
-// 	return *Postgres, err
-// }
-
-// parsing data from request
-
 func ParseDate(dateStr string) (*time.Time, error) {
-	publishedDate, err := time.Parse("2006-01-02 15:04:05", dateStr)
+	publishedDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return nil, err
 	}
